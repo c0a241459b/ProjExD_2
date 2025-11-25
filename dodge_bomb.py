@@ -1,6 +1,7 @@
 import os
 import sys
 import random
+import time
 import pygame as pg
 
 
@@ -29,6 +30,52 @@ def check_bound(rct:pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
+def game_over(screen: pg.Surface) -> None:
+    game_over_surface = pg.Surface((WIDTH, HEIGHT)) 
+    game_over_surface.fill((0, 0, 0))
+    game_over_rect = game_over_surface.get_rect()
+    game_over_rect.center = (WIDTH // 2, HEIGHT // 2)
+    game_over_surface.set_alpha(200)
+
+    game_over_font = pg.font.Font(None, 60)
+    game_over_text = game_over_font.render("Game Over", True, (255, 255, 255))
+    game_over_text_rect = game_over_text.get_rect()
+    game_over_text_rect.center = (WIDTH // 2, HEIGHT // 2)
+    game_over_surface.blit(game_over_text, game_over_text_rect)
+
+    kk_surface = pg.image.load("fig/8.png")
+    kk_rect = kk_surface.get_rect()
+    kk_rect.center = (WIDTH / 3 , HEIGHT / 2)
+    game_over_surface.blit(kk_surface, kk_rect)
+
+    kk_surface = pg.image.load("fig/8.png")
+    kk_rect = kk_surface.get_rect()
+    kk_rect.center = (WIDTH / 3 * 2, HEIGHT / 2)
+    game_over_surface.blit(kk_surface, kk_rect)
+
+    screen.blit(game_over_surface, [0, 0])
+
+    pg.display.update()
+    time.sleep(5)
+
+
+# def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+#     bb_imgs
+#     for r in range(1,11):
+#         bb_img = pg.Surface((20*r, 20*r))
+#         pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+#         bb_imgs.append(bb_img)
+#         bb_accs = [a for a in range(1, 11)]
+
+#     avx = vx*bb_accs[min(tmr//500, 9)]
+#     bb_img = bb_imgs[min(tmr//500, 9)]
+#     bb_rct.width = bb_img.get_rect().width
+
+
+
+
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -43,7 +90,7 @@ def main():
     bb_rct.centerx = random.randint(0, WIDTH) #爆弾横座標
     bb_rct.centery = random.randint(0, HEIGHT) #爆弾縦座標
     vx, vy = +5, +5 #爆弾の横速度, 縦速度
-
+    gameover = False
     
     clock = pg.time.Clock()
     tmr = 0
@@ -53,8 +100,9 @@ def main():
                 return
             
         if kk_rct.colliderect(bb_rct): #こうかとんと爆弾が衝突したら
-            print("ゲームオーバー")
-            return
+            game_over(screen)
+
+        
 
         screen.blit(bg_img, [0, 0]) 
 
@@ -74,7 +122,7 @@ def main():
                 sum_mv[0] += mv[0] #横方向の移動量
                 sum_mv[1] += mv[1] #縦方向の移動量
 
-        
+
         kk_rct.move_ip(sum_mv)
         if check_bound(kk_rct) != (True, True): #画面外なら
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1]) #移動を無かったことにする
