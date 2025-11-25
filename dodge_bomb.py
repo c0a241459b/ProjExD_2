@@ -72,8 +72,19 @@ def game_over(screen: pg.Surface) -> None:
 #     bb_rct.width = bb_img.get_rect().width
 
 
-
-
+def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    kk_dict = {
+        (0, 0):pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9),  #何もしていないとき
+        (0, -5):pg.transform.flip(pg.transform.rotozoom(pg.image.load("fig/3.png"), 270, 0.9), True, False),  #上
+        (+5, -5):pg.transform.flip(pg.transform.rotozoom(pg.image.load("fig/3.png"), -45, 0.9), True, False),  #右上
+        (+5,  0):pg.transform.flip(pg.image.load("fig/3.png"), True, False),  #右
+        (+5, +5):pg.transform.flip(pg.transform.rotozoom(pg.image.load("fig/3.png"), 45, 0.9), True, False),  #右下
+        (0, +5):pg.transform.flip(pg.transform.rotozoom(pg.image.load("fig/3.png"), 90, 0.9), True, False),  #下
+        (-5, +5):pg.transform.rotozoom(pg.image.load("fig/3.png"), 45, 0.9),  #左下
+        (-5,  0):pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9),  #左
+        (-5, -5):pg.transform.rotozoom(pg.image.load("fig/3.png"), 315, 0.9),  #左上
+    }
+    return kk_dict
 
 
 def main():
@@ -92,6 +103,8 @@ def main():
     vx, vy = +5, +5 #爆弾の横速度, 縦速度
     gameover = False
     
+    kk_imgs = get_kk_imgs()
+
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -102,7 +115,6 @@ def main():
         if kk_rct.colliderect(bb_rct): #こうかとんと爆弾が衝突したら
             game_over(screen)
 
-        
 
         screen.blit(bg_img, [0, 0]) 
 
@@ -122,10 +134,11 @@ def main():
                 sum_mv[0] += mv[0] #横方向の移動量
                 sum_mv[1] += mv[1] #縦方向の移動量
 
-
         kk_rct.move_ip(sum_mv)
         if check_bound(kk_rct) != (True, True): #画面外なら
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1]) #移動を無かったことにする
+
+        kk_img = kk_imgs[tuple(sum_mv)]
 
         screen.blit(kk_img, kk_rct)
         yoko, tate = check_bound(bb_rct)
