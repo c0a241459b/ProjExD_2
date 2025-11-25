@@ -31,19 +31,26 @@ def check_bound(rct:pg.Rect) -> tuple[bool, bool]:
 
 
 def game_over(screen: pg.Surface) -> None:
-    game_over_surface = pg.Surface((WIDTH, HEIGHT)) 
+    """
+    引数：画面Surface
+    値：None
+    画面に「Game Over」の文字と「8.png」の画像を描画し、5秒後に終了する
+    """
+    game_over_surface = pg.Surface((WIDTH, HEIGHT)) #gameover Surfaceを作成し、背景色を黒に設定する
     game_over_surface.fill((0, 0, 0))
-    game_over_rect = game_over_surface.get_rect()
-    game_over_rect.center = (WIDTH // 2, HEIGHT // 2)
-    game_over_surface.set_alpha(200)
 
-    game_over_font = pg.font.Font(None, 60)
+    game_over_rect = game_over_surface.get_rect() #gameover SurfaceのRectを作成し、中心を画面の中心に配置する
+    game_over_rect.center = (WIDTH // 2, HEIGHT // 2)
+
+    game_over_surface.set_alpha(200) #gameover Surfaceの透明度を設定する
+
+    game_over_font = pg.font.Font(None, 60) # Game Overの文字を描画し、Surfaceに描画する
     game_over_text = game_over_font.render("Game Over", True, (255, 255, 255))
     game_over_text_rect = game_over_text.get_rect()
     game_over_text_rect.center = (WIDTH // 2, HEIGHT // 2)
     game_over_surface.blit(game_over_text, game_over_text_rect)
 
-    kk_surface = pg.image.load("fig/8.png")
+    kk_surface = pg.image.load("fig/8.png") # 8.pngを描画し、Surfaceに描画する
     kk_rect = kk_surface.get_rect()
     kk_rect.center = (WIDTH / 3 , HEIGHT / 2)
     game_over_surface.blit(kk_surface, kk_rect)
@@ -53,23 +60,36 @@ def game_over(screen: pg.Surface) -> None:
     kk_rect.center = (WIDTH / 3 * 2, HEIGHT / 2)
     game_over_surface.blit(kk_surface, kk_rect)
 
-    screen.blit(game_over_surface, [0, 0])
+    screen.blit(game_over_surface, [0, 0])  # gameover Surfaceを画面に描画する
 
-    pg.display.update()
+    pg.display.update() # 5秒後に終了する
     time.sleep(5)
 
 
 def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
-    bb_imgs = []
+    """
+    引数：なし
+    値：tuple（爆弾画像のリスト、爆弾の半径のリスト）
+    1から10までの半径のリストを作成し、各半径の円を描くSurfaceを生成してリストに追加する
+    """
+    bb_imgs = [] # 画像のリストと半径のリストを作成する
     bb_accs = [a for a in range(1, 11)]
-    for r in range(1, 11):
+
+    for r in range(1, 11): # 1から10までループを回して、各半径の円を描くSurfaceを生成してリストに追加する
         bb_img = pg.Surface((20 * r, 20 * r))
         pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
         bb_imgs.append(bb_img)
-    return bb_imgs, bb_accs
+
+    return bb_imgs, bb_accs # 画像のリストと半径のリストをタプルで返す
 
 
 def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    """
+    引数：なし
+    値：辞書（キーが移動量のタプル、値がSurfaceの辞書）
+    画像「3.png」を読み込み、各移動量の向きに回転・反転してSurfaceを作成して辞書に格納する
+    """
+    # 画像「3.png」を読み込み、各移動量の向きに回転・反転してSurfaceを作成して辞書に格納する
     kk_dict = {
         (0, 0):pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9),  #何もしていないとき
         (0, -5):pg.transform.flip(pg.transform.rotozoom(pg.image.load("fig/3.png"), 270, 0.9), True, False),  #上
@@ -119,15 +139,7 @@ def main():
 
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
-        # if key_lst[pg.K_UP]:
-        #     sum_mv[1] -= 5
-        # if key_lst[pg.K_DOWN]:
-        #     sum_mv[1] += 5
-        # if key_lst[pg.K_LEFT]:
-        #     sum_mv[0] -= 5
-        # if key_lst[pg.K_RIGHT]:
-        #     sum_mv[0] += 5
-
+        
         for key, mv in DELTA.items():
             if key_lst[key]:
                 sum_mv[0] += mv[0] #横方向の移動量
@@ -137,14 +149,18 @@ def main():
         if check_bound(kk_rct) != (True, True): #画面外なら
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1]) #移動を無かったことにする
 
-        avx = vx * bb_accs[min(tmr // 500, 9)]
-        avy = vy * bb_accs[min(tmr // 500, 9)]
-        kk_img = kk_imgs[tuple(sum_mv)]
-        bb_img = bb_imgs[min(tmr // 500, 9)]
-        bb_img.set_colorkey((0,0,0,))
-        bb_rct.width = bb_img.get_rect().width
+        avx = vx * bb_accs[min(tmr // 500, 9)] # 速度を更新する
+        avy = vy * bb_accs[min(tmr // 500, 9)] 
+
+        kk_img = kk_imgs[tuple(sum_mv)] # 画像を取得する
+
+        bb_img = bb_imgs[min(tmr // 500, 9)] # 画像「bb_img」を取得する
+        bb_img.set_colorkey((0,0,0,)) # 背景色を黒に設定する
+
+        bb_rct.width = bb_img.get_rect().width # Rectの幅と高さを取得する
         bb_rct.height = bb_img.get_rect().height
-        bb_rct.move_ip(avx, avy)
+
+        bb_rct.move_ip(avx, avy) # 移動量を足す
 
         screen.blit(kk_img, kk_rct)
         yoko, tate = check_bound(bb_rct)
