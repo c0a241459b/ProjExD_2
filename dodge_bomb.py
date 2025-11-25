@@ -4,7 +4,6 @@ import random
 import pygame as pg
 
 
-
 WIDTH, HEIGHT = 1100, 650
 DELTA = {
     pg.K_UP:(0, -5),
@@ -13,8 +12,21 @@ DELTA = {
     pg.K_RIGHT:(+5, 0),
 }
 
-
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+
+def check_bound(rct:pg.Rect) -> tuple[bool, bool]:
+    """
+    引数：こうかとんRectまたは爆弾Rect
+    値：判定結果タプル（横方向、縦方向）
+    画面内ならTrue、画面外ならFalse
+    """
+    yoko, tate = True, True
+    if rct.left < 0 or WIDTH < rct.right: #横方向のはみ出しチェック
+        yoko = False
+    if rct.top < 0 or HEIGHT < rct.bottom: #横方向のはみ出しチェック
+        tate = False
+    return yoko, tate
 
 
 def main():
@@ -59,7 +71,15 @@ def main():
 
         
         kk_rct.move_ip(sum_mv)
+        if check_bound(kk_rct) != (True, True): #画面外なら
+            kk_rct.move_ip(-sum_mv[0], -sum_mv[1]) #移動を無かったことにする
+
         screen.blit(kk_img, kk_rct)
+        yoko, tate = check_bound(bb_rct)
+        if not yoko: #横方向にはみ出ていたら
+            vx *= -1
+        if not tate: #縦方向にはみ出ていたら
+            vy *= -1
         bb_rct.move_ip(vx, vy) #爆弾の移動
         screen.blit(bb_img, bb_rct)
         pg.display.update()
