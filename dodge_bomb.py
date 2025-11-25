@@ -59,17 +59,14 @@ def game_over(screen: pg.Surface) -> None:
     time.sleep(5)
 
 
-# def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
-#     bb_imgs
-#     for r in range(1,11):
-#         bb_img = pg.Surface((20*r, 20*r))
-#         pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
-#         bb_imgs.append(bb_img)
-#         bb_accs = [a for a in range(1, 11)]
-
-#     avx = vx*bb_accs[min(tmr//500, 9)]
-#     bb_img = bb_imgs[min(tmr//500, 9)]
-#     bb_rct.width = bb_img.get_rect().width
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    bb_imgs = []
+    bb_accs = [a for a in range(1, 11)]
+    for r in range(1, 11):
+        bb_img = pg.Surface((20 * r, 20 * r))
+        pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
+        bb_imgs.append(bb_img)
+    return bb_imgs, bb_accs
 
 
 def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
@@ -101,7 +98,8 @@ def main():
     bb_rct.centerx = random.randint(0, WIDTH) #爆弾横座標
     bb_rct.centery = random.randint(0, HEIGHT) #爆弾縦座標
     vx, vy = +5, +5 #爆弾の横速度, 縦速度
-    gameover = False
+
+    bb_imgs, bb_accs = init_bb_imgs()
     
     kk_imgs = get_kk_imgs()
 
@@ -114,6 +112,7 @@ def main():
             
         if kk_rct.colliderect(bb_rct): #こうかとんと爆弾が衝突したら
             game_over(screen)
+
 
 
         screen.blit(bg_img, [0, 0]) 
@@ -138,7 +137,14 @@ def main():
         if check_bound(kk_rct) != (True, True): #画面外なら
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1]) #移動を無かったことにする
 
+        avx = vx * bb_accs[min(tmr // 500, 9)]
+        avy = vy * bb_accs[min(tmr // 500, 9)]
         kk_img = kk_imgs[tuple(sum_mv)]
+        bb_img = bb_imgs[min(tmr // 500, 9)]
+        bb_img.set_colorkey((0,0,0,))
+        bb_rct.width = bb_img.get_rect().width
+        bb_rct.height = bb_img.get_rect().height
+        bb_rct.move_ip(avx, avy)
 
         screen.blit(kk_img, kk_rct)
         yoko, tate = check_bound(bb_rct)
